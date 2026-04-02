@@ -1,0 +1,39 @@
+name: Java CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  JUNIT_VERSION: 1.13.4
+  JUNIT_JAR: lib/junit-platform-console-standalone.jar
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Download JUnit
+        run: |
+          mkdir -p lib
+          curl -fsSLo "$JUNIT_JAR" \
+            "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/$JUNIT_VERSION/junit-platform-console-standalone-$JUNIT_VERSION.jar"
+
+      - name: Compile
+        run: |
+          mkdir -p out
+          javac -cp "$JUNIT_JAR" -d out *.java
+
+      - name: Run tests
+        run: java -jar "$JUNIT_JAR" execute --class-path out --select-class CalculatorTest
